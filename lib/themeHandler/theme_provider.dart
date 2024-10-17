@@ -1,21 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:wallpaper_flutter_app/themeHandler/theme_data_style.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'theme_data_style.dart';
 
 class ThemeProvider extends ChangeNotifier {
   ThemeData _themeDataStyle = ThemeDataStyle.light;
 
   ThemeData get themeDataStyle => _themeDataStyle;
 
-  set themeDataStyle(ThemeData themeData) {
-    _themeDataStyle = themeData;
+  ThemeProvider() {
+    _loadThemePreference(); // Load theme when the app starts
+  }
+
+  // Load the theme preference from SharedPreferences
+  void _loadThemePreference() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    bool isDarkMode = pref.getBool('theme') ?? false;
+    if (isDarkMode) {
+      _themeDataStyle = ThemeDataStyle.dark;
+    } else {
+      _themeDataStyle = ThemeDataStyle.light;
+    }
     notifyListeners();
   }
 
-  void changeTheme() {
-    if (_themeDataStyle == ThemeDataStyle.light) {
-      themeDataStyle = ThemeDataStyle.dark;
+  // Save the theme preference to SharedPreferences
+  void toggleTheme(bool isDarkMode) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    if (isDarkMode) {
+      _themeDataStyle = ThemeDataStyle.dark;
+      await pref.setBool('theme', true); // Save dark theme preference
     } else {
-      themeDataStyle = ThemeDataStyle.light;
+      _themeDataStyle = ThemeDataStyle.light;
+      await pref.setBool('theme', false); // Save light theme preference
     }
+    notifyListeners();
   }
 }

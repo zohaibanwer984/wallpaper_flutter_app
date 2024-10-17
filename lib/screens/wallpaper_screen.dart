@@ -23,6 +23,7 @@ class WallpaperScreen extends StatelessWidget {
             top: 40, // Adjust this value depending on the status bar height
             left: 10,
             child: FloatingActionButton(
+              heroTag: 'backButtonTag',
               mini: true,
               backgroundColor: Colors.black.withOpacity(0.6),
               onPressed: () {
@@ -38,6 +39,7 @@ class WallpaperScreen extends StatelessWidget {
       ),
       // Floating Action Button with Paint Icon at the bottom
       floatingActionButton: FloatingActionButton(
+        heroTag: 'paintButtonTag', // Assign a unique tag for the main button
         onPressed: () {
           // Add the functionality you want for this button
         },

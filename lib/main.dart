@@ -13,16 +13,21 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: Provider.of<ThemeProvider>(context)
-          .themeDataStyle, // Light/Default mode styles
-      darkTheme: ThemeDataStyle.dark, // Dark mode styles
+          .themeDataStyle, // Use the current theme from ThemeProvider
+      darkTheme: ThemeDataStyle.dark, // Optional dark theme style
       initialRoute: '/home',
       routes: {
         '/home': (context) => const HomeScreen(),

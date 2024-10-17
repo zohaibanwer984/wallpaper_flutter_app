@@ -32,7 +32,8 @@ class _SettingPageState extends State<SettingPage> {
                 ? true
                 : false,
             onChanged: (isOn) {
-              themeProvider.changeTheme();
+              Provider.of<ThemeProvider>(context, listen: false)
+                  .toggleTheme(isOn);
             },
           ),
         ),
