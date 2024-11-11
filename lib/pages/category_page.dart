@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wallpaper_flutter_app/screens/category_screen.dart';
 import 'package:wallpaper_flutter_app/utils/pexel_api.dart';
 
 class CategoryPage extends StatefulWidget {
@@ -45,6 +46,9 @@ class _CategoryPageState extends State<CategoryPage> {
         print('Error loading image for ${category['name']}: $e');
       }
     }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _loading = false;
     });
@@ -74,7 +78,13 @@ class _CategoryPageState extends State<CategoryPage> {
 
                   return GestureDetector(
                     onTap: () {
-                      // Navigate to category-specific wallpapers
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryScreen(categoryName: categoryName),
+                        ),
+                      );
                     },
                     child: Container(
                       decoration: BoxDecoration(
