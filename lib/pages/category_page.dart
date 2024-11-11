@@ -104,7 +104,10 @@ class _CategoryPageState extends State<CategoryPage> {
                       child: Center(
                         child: Text(
                           categoryName,
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(color: Colors.white),
                           textAlign: TextAlign.center,
                         ),
                       ),
