@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:wallpaper_flutter_app/pages/category_page.dart';
 import 'package:wallpaper_flutter_app/pages/home_page.dart';
 import 'package:wallpaper_flutter_app/pages/settings_page.dart';
+import 'package:wallpaper_flutter_app/utils/pexel_api.dart';
+import 'package:wallpaper_flutter_app/widgets/cutom_search_delegate.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,19 +14,30 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  final PexelsAPI _pexelsAPI = PexelsAPI();
+
   final List<Widget> _pages = [
     HomePage(),
     CategoryPage(),
     const SettingPage(),
   ];
+
   List<Widget> actionCheck(int index) {
     List<Widget> actions = [];
     setState(() {
       if (index == 0) {
         actions.add(
           IconButton(
-            onPressed: () {},
             icon: const Icon(Icons.search),
+            onPressed: () async {
+              final query = await showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(),
+              );
+              if (query != null && query.isNotEmpty) {
+                await _pexelsAPI.fetchWallpapers(query);
+              }
+            },
           ),
         );
       }
@@ -51,16 +64,34 @@ class _HomeScreenState extends State<HomeScreen> {
         items: [
           BottomNavyBarItem(
             icon: const Icon(Icons.apps),
-            title: const Text('Home'),
+            title: const Padding(
+              padding: EdgeInsets.only(left: 15),
+              child: Text(
+                'Home',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
             activeColor: Colors.deepPurpleAccent,
           ),
           BottomNavyBarItem(
               icon: const Icon(Icons.category),
-              title: const Text('Category'),
+              title: const Padding(
+                padding: EdgeInsets.only(left: 15),
+                child: Text(
+                  'Category',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
               activeColor: Colors.deepPurpleAccent),
           BottomNavyBarItem(
               icon: const Icon(Icons.settings),
-              title: const Text('Settings'),
+              title: const Padding(
+                padding: EdgeInsets.only(left: 15),
+                child: Text(
+                  'Settings',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
               activeColor: Colors.deepPurpleAccent),
         ],
       ),

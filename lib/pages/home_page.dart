@@ -1,71 +1,190 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:wallpaper_flutter_app/screens/wallpaper_screen.dart';
-import 'package:wallpaper_flutter_app/widgets/clickable_card.dart';
-import 'package:wallpaper_flutter_app/widgets/show_more.dart';
+import 'package:wallpaper_flutter_app/utils/pexel_api.dart';
 
-class HomePage extends StatelessWidget {
-  final List<String> _imgList = [
-    'https://images.unsplash.com/photo-1520342868574-5fa3804e551c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6ff92caffcdd63681a35134a6770ed3b&auto=format&fit=crop&w=1951&q=80',
-    'https://images.unsplash.com/photo-1522205408450-add114ad53fe?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=368f45b0888aeb0b7b08e3a1084d3ede&auto=format&fit=crop&w=1950&q=80',
-    'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=94a1e718d89ca60a6337a6008341ca50&auto=format&fit=crop&w=1950&q=80',
-    'https://images.unsplash.com/photo-1523205771623-e0faa4d2813d?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=89719a0d55dd05e2deae4120227e6efc&auto=format&fit=crop&w=1953&q=80',
-    'https://images.unsplash.com/photo-1508704019882-f9cf40e475b4?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8c6e5e3aba713b17aa1fe71ab4f0ae5b&auto=format&fit=crop&w=1352&q=80',
-    'https://images.unsplash.com/photo-1519985176271-adb1088fa94c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=a0c8d632e977f94e5d312d9893258f59&auto=format&fit=crop&w=1355&q=80'
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final PexelsAPI _pexelsAPI = PexelsAPI();
+  List<String> _trendingWallpapers = [];
+  List<String> _featuredWallpapers = [];
+  bool _loading = false;
+
+  // Define categories
+  final List<String> categories = [
+    'Popular',
+    'Nature',
+    'Animals',
+    'Abstract',
+    'Technology',
+    'Space',
+    'Fashion',
   ];
 
-  HomePage({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _loadFeaturedAndTrendingWallpapers();
+  }
+
+  // Load featured and trending wallpapers
+  Future<void> _loadFeaturedAndTrendingWallpapers() async {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
+    try {
+      _featuredWallpapers = await _pexelsAPI.fetchRandomWallpapers();
+      _trendingWallpapers = await _pexelsAPI.fetchWallpapers('popular');
+    } catch (e) {
+      print('Error fetching wallpapers: $e');
+    }
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  // Fetch wallpapers for selected category
+  void _fetchCategoryWallpapers(String category) async {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
+    _trendingWallpapers = await _pexelsAPI.fetchWallpapers(category);
+    setState(() {
+      _loading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          ShowMore(heading: 'Trending', onTap: () {}),
-          CarouselSlider.builder(
-            itemCount: _imgList.length,
-            itemBuilder: (context, index, realIndex) {
-              return ClickableCard(
-                  imageSource: _imgList[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            WallpaperScreen(source: _imgList[index]),
+    return (_loading)
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image Carousel for Featured Wallpapers
+                Padding(
+                  padding: const EdgeInsets.all(9),
+                  child: CarouselSlider(
+                    items: _featuredWallpapers.map((imageUrl) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => WallpaperScreen(source: imageUrl),
+                            ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    options: CarouselOptions(
+                      height: 200,
+                      autoPlay: true,
+                      enlargeCenterPage: true,
+                      viewportFraction: 0.8,
+                    ),
+                  ),
+                ),
+
+                // Categories Section
+                Padding(
+                  padding: const EdgeInsets.all(9),
+                  child: Text(
+                    'You may like these',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                SizedBox(
+                  height: 50,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () =>
+                            _fetchCategoryWallpapers(categories[index]),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurpleAccent,
+                            borderRadius: BorderRadius.circular(
+                                50), // Makes the pill shape
+                          ),
+                          child: Center(
+                            child: Text(
+                              categories[index],
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                MasonryGridView.count(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  padding: const EdgeInsets.all(13.0),
+                  itemCount: _trendingWallpapers.length,
+                  shrinkWrap:
+                      true, // Makes MasonryGridView fit within SingleChildScrollView
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Disable inner scrolling
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WallpaperScreen(
+                                source: _trendingWallpapers[index]),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          _trendingWallpapers[index],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     );
-                  });
-            },
-            options: CarouselOptions(
-              autoPlay: true,
-              height: 200.0,
+                  },
+                ),
+              ],
             ),
-          ),
-          ShowMore(heading: 'Popular', onTap: () {}),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            scrollDirection: Axis.vertical, // Disable ListView's own scrolling
-            itemCount: _imgList.length, // Add your item count here
-            itemBuilder: (context, index) {
-              return ClickableCard(
-                  imageSource: _imgList[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            WallpaperScreen(source: _imgList[index]),
-                      ),
-                    );
-                  });
-            },
-          ),
-        ],
-      ),
-    );
+          );
   }
 }
