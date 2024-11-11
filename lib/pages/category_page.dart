@@ -1,84 +1,108 @@
 import 'package:flutter/material.dart';
-import 'package:wallpaper_flutter_app/screens/catagory_screen.dart';
-import 'package:wallpaper_flutter_app/widgets/catagory_card.dart';
+import 'package:wallpaper_flutter_app/utils/pexel_api.dart';
 
-class CategoryPage extends StatelessWidget {
-  final List<String> _categoryImage = [
-    'https://images.pexels.com/photos/386009/pexels-photo-386009.jpeg?auto=compress&cs=tinysrgb&w=300',
-    'https://images.pexels.com/photos/96381/pexels-photo-96381.jpeg?auto=compress&cs=tinysrgb&w=300',
-    'https://images.pexels.com/photos/247599/pexels-photo-247599.jpeg?auto=compress&cs=tinysrgb&w=300',
-    'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=300',
-    'https://images.pexels.com/photos/209977/pexels-photo-209977.jpeg?auto=compress&cs=tinysrgb&w=300',
-    'https://images.pexels.com/photos/2156/sky-earth-space-working.jpg?auto=compress&cs=tinysrgb&w=300',
+class CategoryPage extends StatefulWidget {
+  const CategoryPage({super.key});
+
+  @override
+  _CategoryPageState createState() => _CategoryPageState();
+}
+
+class _CategoryPageState extends State<CategoryPage> {
+  final PexelsAPI _pexelsAPI = PexelsAPI();
+  final List<Map<String, String>> categories = [
+    {'name': 'Nature'},
+    {'name': 'Animals'},
+    {'name': 'Abstract'},
+    {'name': 'Technology'},
+    {'name': 'Space'},
+    {'name': 'Fashion'},
+    {'name': 'Food'},
+    {'name': 'Sports'},
+    {'name': 'Travel'},
+    {'name': 'Music'},
+    {'name': 'Architecture'},
+    {'name': 'Cars'},
   ];
 
-  final List<String> _categories = [
-    "Travel",
-    "Abstract",
-    "Nature",
-    "Event",
-    "Sports",
-    "Space"
-  ];
-  final List<WallpaperCategory> _categoriesList = [
-    WallpaperCategory.travel,
-    WallpaperCategory.abstract,
-    WallpaperCategory.nature,
-    WallpaperCategory.event,
-    WallpaperCategory.sports,
-    WallpaperCategory.space
-  ];
+  Map<String, String> categoryImages = {}; // Stores images for each category
+  bool _loading = true;
 
-  CategoryPage({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _loadCategoryImages();
+  }
+
+  Future<void> _loadCategoryImages() async {
+    for (var category in categories) {
+      try {
+        final imageUrl = await _pexelsAPI.fetchSingleImage(category['name']!);
+        if (imageUrl != null) {
+          categoryImages[category['name']!] = imageUrl;
+        }
+      } catch (e) {
+        print('Error loading image for ${category['name']}: $e');
+      }
+    }
+    setState(() {
+      _loading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var size = (MediaQuery.of(context).size.width / 2.0) - 30;
-
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Text(
-              "Categories",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                return CategoryCard(
-                  imageUrl: _categoryImage[index],
-                  categoryName: _categories[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            CatagoryScreen(category: _categoriesList[index]),
-                      ),
-                    );
-                  },
-                  imageSize: size,
-                );
-              },
-            ),
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Categories'),
       ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 2.5, // Controls pill shape
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                ),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final categoryName = categories[index]['name']!;
+                  final imageUrl = categoryImages[categoryName];
+
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to category-specific wallpapers
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                        image: imageUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(imageUrl),
+                                fit: BoxFit.cover,
+                                colorFilter: ColorFilter.mode(
+                                  Colors.black.withOpacity(0.5),
+                                  BlendMode.darken,
+                                ),
+                              )
+                            : null,
+                        color: Colors.grey.shade200,
+                      ),
+                      child: Center(
+                        child: Text(
+                          categoryName,
+                          style: Theme.of(context).textTheme.headlineSmall,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }
