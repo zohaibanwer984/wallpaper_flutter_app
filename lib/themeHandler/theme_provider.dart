@@ -3,36 +3,57 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'theme_data_style.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  ThemeData _themeDataStyle = ThemeDataStyle.light;
+  ThemeData _themeDataStyle;
+  Color _accentColor = Colors.blue; // Default accent color
 
   ThemeData get themeDataStyle => _themeDataStyle;
+  Color get accentColor => _accentColor;
 
-  ThemeProvider() {
-    _loadThemePreference(); // Load theme when the app starts
+  ThemeProvider() : _themeDataStyle = ThemeDataStyle.getLightTheme(Colors.blue) {
+    _loadThemePreferences(); // Load theme and accent color when the app starts
   }
 
-  // Load the theme preference from SharedPreferences
-  void _loadThemePreference() async {
+  // Load the theme and accent color preferences from SharedPreferences
+  void _loadThemePreferences() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
+
+    // Load theme preference
     bool isDarkMode = pref.getBool('theme') ?? false;
-    if (isDarkMode) {
-      _themeDataStyle = ThemeDataStyle.dark;
-    } else {
-      _themeDataStyle = ThemeDataStyle.light;
-    }
+
+    // Load accent color preference
+    int accentColorValue = pref.getInt('accentColor') ?? Colors.blue.value;
+    _accentColor = Color(accentColorValue);
+
+    _themeDataStyle = isDarkMode
+        ? ThemeDataStyle.getDarkTheme(_accentColor)
+        : ThemeDataStyle.getLightTheme(_accentColor);
+
     notifyListeners();
   }
 
-  // Save the theme preference to SharedPreferences
+  // Toggle theme and save preference
   void toggleTheme(bool isDarkMode) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    if (isDarkMode) {
-      _themeDataStyle = ThemeDataStyle.dark;
-      await pref.setBool('theme', true); // Save dark theme preference
-    } else {
-      _themeDataStyle = ThemeDataStyle.light;
-      await pref.setBool('theme', false); // Save light theme preference
-    }
+
+    _themeDataStyle = isDarkMode
+        ? ThemeDataStyle.getDarkTheme(_accentColor)
+        : ThemeDataStyle.getLightTheme(_accentColor);
+    await pref.setBool('theme', isDarkMode); // Save theme preference
+
+    notifyListeners();
+  }
+
+  // Update accent color and save preference
+  void setAccentColor(Color color) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+
+    _accentColor = color;
+    await pref.setInt('accentColor', color.value); // Save accent color preference
+
+    _themeDataStyle = _themeDataStyle.brightness == Brightness.dark
+        ? ThemeDataStyle.getDarkTheme(_accentColor)
+        : ThemeDataStyle.getLightTheme(_accentColor);
+
     notifyListeners();
   }
 }

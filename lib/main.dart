@@ -27,7 +27,6 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: Provider.of<ThemeProvider>(context)
           .themeDataStyle, // Use the current theme from ThemeProvider
-      darkTheme: ThemeDataStyle.dark, // Optional dark theme style
       initialRoute: '/home',
       routes: {
         '/home': (context) => const HomeScreen(),

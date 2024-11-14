@@ -1,8 +1,10 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wallpaper_flutter_app/pages/category_page.dart';
 import 'package:wallpaper_flutter_app/pages/home_page.dart';
 import 'package:wallpaper_flutter_app/pages/settings_page.dart';
+import 'package:wallpaper_flutter_app/themeHandler/theme_provider.dart';
 import 'package:wallpaper_flutter_app/utils/pexel_api.dart';
 import 'package:wallpaper_flutter_app/widgets/cutom_search_delegate.dart';
 
@@ -17,8 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final PexelsAPI _pexelsAPI = PexelsAPI();
 
   final List<Widget> _pages = [
-    HomePage(),
-    CategoryPage(),
+    const HomePage(),
+    const CategoryPage(),
     const SettingPage(),
   ];
 
@@ -47,53 +49,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: themeProvider.accentColor.withOpacity(0.1),
         centerTitle: true,
-        title: const Text("WALLPAPER APP"),
+        title: Text(
+          "PIXEL PICKS",
+          style: TextStyle(
+              color: themeProvider.accentColor, fontWeight: FontWeight.bold),
+        ),
         actions: actionCheck(_selectedIndex),
       ),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavyBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        selectedIndex: _selectedIndex,
-        onItemSelected: (index) => setState(() {
-          _selectedIndex = index;
-        }),
-        items: [
-          BottomNavyBarItem(
-            icon: const Icon(Icons.apps),
-            title: const Padding(
-              padding: EdgeInsets.only(left: 15),
-              child: Text(
-                'Home',
-                style: TextStyle(color: Colors.white),
+      body: Container(
+        color: themeProvider.accentColor.withOpacity(0.1),
+        child: _pages[_selectedIndex],
+      ),
+      bottomNavigationBar: Container(
+        color: themeProvider.accentColor.withOpacity(0.1),
+        child: BottomNavyBar(
+          backgroundColor: Colors.transparent,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          selectedIndex: _selectedIndex,
+          onItemSelected: (index) => setState(() {
+            _selectedIndex = index;
+          }),
+          items: [
+            BottomNavyBarItem(
+              icon: const Icon(Icons.apps),
+              title: const Padding(
+                padding: EdgeInsets.only(left: 15),
+                child: Text(
+                  'Home',
+                ),
               ),
+              activeColor: themeProvider.accentColor,
             ),
-            activeColor: Colors.deepPurpleAccent,
-          ),
-          BottomNavyBarItem(
+            BottomNavyBarItem(
               icon: const Icon(Icons.category),
               title: const Padding(
                 padding: EdgeInsets.only(left: 15),
                 child: Text(
                   'Category',
-                  style: TextStyle(color: Colors.white),
                 ),
               ),
-              activeColor: Colors.deepPurpleAccent),
-          BottomNavyBarItem(
+              activeColor: themeProvider.accentColor,
+            ),
+            BottomNavyBarItem(
               icon: const Icon(Icons.settings),
               title: const Padding(
                 padding: EdgeInsets.only(left: 15),
                 child: Text(
                   'Settings',
-                  style: TextStyle(color: Colors.white),
                 ),
               ),
-              activeColor: Colors.deepPurpleAccent),
-        ],
+              activeColor: themeProvider.accentColor,
+            ),
+          ],
+        ),
       ),
     );
   }

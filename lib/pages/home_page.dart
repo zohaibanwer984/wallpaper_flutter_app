@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:provider/provider.dart';
 import 'package:wallpaper_flutter_app/screens/wallpaper_screen.dart';
+import 'package:wallpaper_flutter_app/themeHandler/theme_provider.dart';
 import 'package:wallpaper_flutter_app/utils/pexel_api.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,12 +47,12 @@ class _HomePageState extends State<HomePage> {
     try {
       _featuredWallpapers = await _pexelsAPI.fetchRandomWallpapers();
       _trendingWallpapers = await _pexelsAPI.fetchWallpapers('popular');
+      setState(() {
+        _loading = false;
+      });
     } catch (e) {
       print('Error fetching wallpapers: $e');
     }
-    setState(() {
-      _loading = false;
-    });
   }
 
   // Fetch wallpapers for selected category
@@ -69,6 +71,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return (_loading)
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
@@ -131,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                           margin: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 5),
                           decoration: BoxDecoration(
-                            color: Colors.deepPurpleAccent,
+                            color: themeProvider.accentColor,
                             borderRadius: BorderRadius.circular(
                                 50), // Makes the pill shape
                           ),

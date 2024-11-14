@@ -9,7 +9,7 @@ class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key, required this.categoryName});
 
   @override
-  _CategoryScreenState createState() => _CategoryScreenState();
+  State<CategoryScreen> createState() => _CategoryScreenState();
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
@@ -74,7 +74,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              icon: const Icon(Icons.arrow_back,
+                                  color: Colors.white),
                               onPressed: () => Navigator.pop(context),
                             ),
                             Text(
